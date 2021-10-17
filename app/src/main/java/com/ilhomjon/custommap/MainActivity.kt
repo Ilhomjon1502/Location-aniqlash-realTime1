@@ -21,6 +21,7 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
 
     //video link: https://youtu.be/4eWoXPSpA5Y?t=466
+    //documentation link: https://developers.google.com/android/guides/setup
 
     private val TAG = "MainActivity"
     val REQUEST_CODE_PERMISSION = 1000
