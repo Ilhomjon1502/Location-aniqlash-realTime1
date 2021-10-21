@@ -2,6 +2,7 @@ package com.ilhomjon.custommap
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
@@ -9,6 +10,7 @@ import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
@@ -30,21 +32,31 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
-    var locationCallback = object : LocationCallback(){
+    var locationCallback = object : LocationCallback() {
         override fun onLocationResult(location: LocationResult) {
-           if (location == null){
-               return
-           }
-            for (location:Location in location.locations){
-                Log.d(TAG, "onLocationResult: ${location.toString()}")
+            if (location == null) {
+                return
             }
-            var addressList: List<Address> =
-                geocoder.getFromLocation(location.lastLocation.latitude, location.lastLocation.longitude, 1);                                                                                                      val address: Address = addressList.get(0)
-            binding.txt1.setText(address.getAddressLine(0))
+            for (location: Location in location.locations) {
+                Log.d(TAG, "onLocationResult: ${location.toString()}")
+                Toast.makeText(
+                    this@MainActivity,
+                    "${location.longitude}, ${location.latitude}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+//            var addressList: List<Address> =
+//                geocoder.getFromLocation(
+//                    location.lastLocation.latitude,
+//                    location.lastLocation.longitude,
+//                    1
+//                );
+//            val address: Address = addressList.get(0)
+//            binding.txt1.setText(address.getAddressLine(0))
         }
     }
 
-    lateinit var binding:ActivityMainBinding
+    lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -78,7 +90,7 @@ class MainActivity : AppCompatActivity() {
         stopLocationUpdates()
     }
 
-    fun checkSettingsAndStartUpdates(){
+    fun checkSettingsAndStartUpdates() {
         val request = LocationSettingsRequest.Builder()
             .addLocationRequest(locationRequest)
             .build()
@@ -89,18 +101,30 @@ class MainActivity : AppCompatActivity() {
             //Settings of device are satisfied and we can start location updates
             startLocationUpdates()
         }
-        locationSettingsResponseTask.addOnFailureListener{
+        locationSettingsResponseTask.addOnFailureListener {
             Log.d(TAG, "checkSettingsAndStartUpdates: Error")
-            Toast.makeText(this, "Xatolik \ncheckSettingsAndStartUpdates", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Xatolik \ncheckSettingsAndStartUpdates", Toast.LENGTH_SHORT)
+                .show()
+            openGpsEnableSetting()
         }
     }
 
-    @SuppressLint("MissingPermission")
-    fun startLocationUpdates(){
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+    val REQUEST_ENABLE_GPS = 1
+    private fun openGpsEnableSetting() {
+        val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+        startActivityForResult(intent, REQUEST_ENABLE_GPS)
     }
 
-    fun stopLocationUpdates(){
+    @SuppressLint("MissingPermission")
+    fun startLocationUpdates() {
+        fusedLocationProviderClient.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            Looper.getMainLooper()
+        )
+    }
+
+    fun stopLocationUpdates() {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
     }
 
